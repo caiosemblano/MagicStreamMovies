@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -12,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
+	"github.com/tmc/langchaingo/llms/openai"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -113,7 +116,44 @@ func adminReviewUpdate() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
+		sentiment, rankVal, err := getReviewRanking(req.AdminReview)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get review ranking"})
+			return
+		}
 
+		filter := bson.M{"imdb_id": movieId}
+
+		update := bson.M{
+			"$set": bson.M{
+				"admin_review": req.AdminReview,
+				"ranking": bson.M{
+					"ranking_name":  sentiment,
+					"ranking_value": rankVal,
+				
+				},
+			},
+		}
+
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		result, err := movieCollection.UpdateOne(ctx, filter, update)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating movie"})
+			return
+		}
+
+		if result.MatchedCount == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "movie not found"})
+			return
+		}
+
+		resp.RankingName = sentiment
+		resp.AdminReview = req.AdminReview
+
+		c.JSON(http.StatusOK, resp)
 
 	}
 }
@@ -138,7 +178,36 @@ func getReviewRanking(review string) (string, int, error) {
 		log.Println("Warning: Could not load .env file")
 	}
 
+	OpenAiApiKey := os.Getenv("OPENAI_API_KEY")
+	if OpenAiApiKey == "" {
+		return "", 0, errors.New("Could not read OPENAI_API_KEY")
+	}
 
+	llm, err := openai.New(openai.WithToken(OpenAiApiKey))
+
+	if err != nil {
+		return "", 0, err
+	}
+
+	BasePromptTemplate := os.Getenv("BASE_PROMPT_TEMPLATE")
+
+	BasePrompt := strings.Replace(BasePromptTemplate, "{rankings}", sentimentDelimited, 1)
+
+	response, err := llm.Call(context.Background(), BasePrompt + review)
+
+	if err != nil {
+		return "", 0, err
+	}
+	rankVal := 0
+
+	for _, ranking := range rankings {
+		if ranking.RankingName == response {
+			rankVal = ranking.RankingValue
+			break
+		}
+	}
+
+	return response, rankVal, nil
 }
 
 func getRankings() ([]models.Ranking, error) {
