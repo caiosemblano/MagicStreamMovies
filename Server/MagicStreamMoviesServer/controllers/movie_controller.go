@@ -97,7 +97,7 @@ func AddMovie() gin.HandlerFunc {
 	}
 }
 
-func adminReviewUpdate() gin.HandlerFunc {
+func AdminReviewUpdate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		movieId := c.Param("imdb_id")
 		if movieId == "" {
