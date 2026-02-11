@@ -9,7 +9,6 @@ import (
 func SetupProtectedRoutes(router *gin.Engine) {
 	router.Use(middleware.AuthMiddleware())
 	router.POST("/addmovie", controller.AddMovie())
-	router.GET("/movie/:imdb_id", controller.GetMovie())	
-
-
+	router.GET("/movie/:imdb_id", controller.GetMovie())
+	
 }
