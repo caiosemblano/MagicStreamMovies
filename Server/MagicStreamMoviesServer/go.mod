@@ -3,7 +3,6 @@ module github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer
 go 1.25.1
 
 require (
-	github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer v0.0.0-20260211195035-f1debe2691df
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.11.0
 	github.com/joho/godotenv v1.5.1

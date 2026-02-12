@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/GavinLonDigital/MagicStream/Server/MagicStreamServer/database"
-	"github.com/GavinLonDigital/MagicStream/Server/MagicStreamServer/models"
-	"github.com/GavinLonDigital/MagicStream/Server/MagicStreamServer/utils"
+	"github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer/database"
+	"github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer/models"
+	"github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
