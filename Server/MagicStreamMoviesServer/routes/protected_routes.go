@@ -1,14 +1,17 @@
 package routes
 
 import (
-	controller "github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer/controllers"
+	controller "github.com/GavinLonDigital/MagicStream/Server/MagicStreamServer/controllers"
+	"github.com/GavinLonDigital/MagicStream/Server/MagicStreamServer/middleware"
 	"github.com/gin-gonic/gin"
-	"github.com/caiosemblano/MagicStreamMovies/Server/MagicStreamMoviesServer/middleware"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func SetupProtectedRoutes(router *gin.Engine) {
+func SetupProtectedRoutes(router *gin.Engine, client *mongo.Client) {
 	router.Use(middleware.AuthMiddleware())
-	router.POST("/addmovie", controller.AddMovie())
-	router.GET("/movie/:imdb_id", controller.GetMovie())
-	
+
+	router.GET("/movie/:imdb_id", controller.GetMovie(client))
+	router.POST("/addmovie", controller.AddMovie(client))
+	router.GET("/recommendedmovies", controller.GetRecommendedMovies(client))
+	router.PATCH("/updatereview/:imdb_id", controller.AdminReviewUpdate(client))
 }
