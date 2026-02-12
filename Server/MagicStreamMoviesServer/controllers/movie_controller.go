@@ -387,6 +387,5 @@ func GetGenres(client *mongo.Client) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, genres)
-
 	}
 }
